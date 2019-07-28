@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyShopK6.Models;
@@ -54,17 +56,39 @@ namespace MyShopK6.Controllers
             return Json(data: true);
         }
 
-        //cần lưu trữ lại đăng nhập trước đó. ReturnUrl
+        //cần lưu trữ lại đăng nhập trước đó. 
+        //ReturnUrl
         public IActionResult Login(string ReturnUrl = null)
         {
+            //lay viewbag de truyen qua view login httppost
+            ViewBag.ReturnUrl = ReturnUrl;
             return View();
         }
         [HttpPost]
-        public IActionResult Login(LoginViewModels model)
+        public async Task<IActionResult> Login(LoginViewModels model)
         {
             //di kiem thang email:
             KhachHang khachHang = _content.KhachHangs.SingleOrDefault(p => p.Email == model.Email && ((model.MatKhau + p.RandomKey).ToMD5() == p.MatKhau));
-            return View();
+
+            if (khachHang == null)//không khớp
+            {
+                ViewBag.ThongBaoLoi = "Sai thông tin đăng nhập";
+                return View();
+            }
+            //ghi nhận đăng nhập thành công
+            var claims = new List<Claim> { new Claim(ClaimTypes.Name, khachHang.HoTen) };
+            ClaimsIdentity userIdentity = new ClaimsIdentity(claims, "login");
+
+            ClaimsPrincipal principal = new ClaimsPrincipal(userIdentity);
+            await HttpContext.SignInAsync(principal);
+            if (Url.IsLocalUrl(ReturnUrl))
+            {
+                return Redirect(ReturnUrl);
+            }
+            
+            
+        return RedirectToAction("Profile", "KhachHang");//default
+            
         }
         [Authorize]
         public IActionResult Logout()
