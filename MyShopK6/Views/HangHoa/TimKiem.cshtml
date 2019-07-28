@@ -1,0 +1,73 @@
+﻿@model IEnumerable<HangHoaView>
+
+<ul class="products-grid">
+    @foreach (var hh in Model)
+    {
+        <li class="item col-lg-4 col-md-4 col-sm-6 col-xs-6 ">
+            <div class="product-item">
+                <div class="item-inner">
+                    <div class="product-thumbnail">
+                        <div class="icon-new-label new-left">New</div>
+                        <div class="pr-img-area">
+                            <a title="@hh.TenHh" href="/HangHoa/@hh.TenHhFriendly">
+                                <figure> <img class="first-img" src="~/Hinh/HangHoa/@hh.Hinh" alt="@hh.TenHh"> <img class="hover-img" src="~/Hinh/HangHoa/@hh.Hinh" alt="@hh.TenHh"></figure>
+                            </a>
+                        </div>
+                        <div class="pr-info-area">
+                            <div class="pr-button">
+                                <div class="mt-button add_to_wishlist"> <a href="wishlist.html"> <i class="fa fa-heart"></i> </a> </div>
+                                <div class="mt-button add_to_compare"> <a href="compare.html"> <i class="fa fa-signal"></i> </a> </div>
+                                <div class="mt-button quick-view"> <a href="quick_view.html"> <i class="fa fa-search"></i> </a> </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-info">
+                        <div class="info-inner">
+                            <div class="item-title">
+                                <a title="@hh.TenHh" asp-controller="HangHoa" asp-action="ChiTiet" asp-route-id="@hh.MaHh">@hh.TenHh </a>
+                            </div>
+                            <div class="item-content">
+                                <div class="rating"> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star-o"></i> <i class="fa fa-star-o"></i> <i class="fa fa-star-o"></i> </div>
+                                <div class="item-price">
+                                    <div class="price-box"> <span class="regular-price"> <span class="price">@hh.DonGia.ToString("#,##0")</span> </span> </div>
+                                </div>
+                                <div class="pro-action">
+                                    <button type="button" class="add-to-cart mua-ngay" data-mahh="@hh.MaHh" data-tenhh="@hh.TenHh"><span>Mua ngay</span> </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </li>
+    }
+
+</ul>
+
+
+<script>
+    $(function () {
+        //gắn sự kiện click nút mua ngay
+        $(".mua-ngay").click(function () {
+            var mahh = $(this).attr("data-mahh");
+            var tenhh = $(this).attr("data-tenhh");
+            $.ajax({
+                url: "/Cart/AddToCart",
+                type: "post",
+                data: {
+                    productId: mahh, qty: 1,
+                    loai: "AJAX"
+                },
+                success: function (result) {
+                    //alert("Thêm thành công");
+                    Swal.fire({
+                        title: 'Thông báo',
+                        html: "Thêm hàng hóa <b>" + tenhh + "</b> thành công",
+                        type: 'success'
+                    });
+                    $(".cart-total").html(result.soLuong);
+                }
+            });
+        });
+    });
+</script>

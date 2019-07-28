@@ -1,0 +1,98 @@
+﻿@model IEnumerable<CartItem>
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<section class="main-container col1-layout">
+    <div class="main container">
+        <div class="col-main">
+            <div class="cart">
+
+                <div class="page-content page-order">
+                    <div class="page-title">
+                        <h2>Giỏ hàng</h2>
+                    </div>
+
+                    <div class="order-detail-content">
+                        <div class="table-responsive">
+                            <table class="table table-bordered cart_summary">
+                                <thead>
+                                    <tr>
+                                        <th class="cart_product">Hàng hóa</th>
+                                        <th>Mô tả</th>
+                                        <th>Đơn giá</th>
+                                        <th>Số lượng</th>
+                                        <th>Thành tiền</th>
+                                        <th class="action"><i class="fa fa-trash-o"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="cart_product">
+                                                <a href="/HangHoa/ChiTiet/@item.HangHoa.MaHh">
+                                                    <img src="~/Hinh/HangHoa/@item.HangHoa.Hinh" alt="@item.HangHoa.TenHh">
+                                                </a>
+                                            </td>
+                                            <td class="cart_description">
+                                                <p class="product-name"><a href="#">@item.HangHoa.TenHh</a></p>
+                                                @*<small><a href="#">Color : Red</a></small>
+                                                    <small><a href="#">Size : M</a></small>*@
+                                            </td>
+                                            <td class="price"><span>@item.HangHoa.GiaBan.ToVND()</span></td>
+                                            <td class="qty"><input class="form-control input-sm" type="text" value="@item.SoLuong"></td>
+                                            <td class="price"><span>@item.ThanhTien.ToVND()</span></td>
+                                            <td class="action">
+                                                <a asp-action="RemoveCart" asp-route-id="@item.HangHoa.MaHh"><i class="icon-close"></i></a>
+                                                <button class="btn btn-danger remove-cart-item" data-id="@item.HangHoa.MaHh" type="button">Bỏ</button>
+                                            </td>
+                                        </tr>
+                                    }
+
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4"><strong>Tổng tiền</strong></td>
+                                        <td colspan="2">
+                                            <span id="TongTien" class="text-danger font-weight-bolder">@Model.Sum(p => p.ThanhTien).ToVND() </span>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div class="cart_navigation">
+                            <a class="continue-btn" href="#"><i class="fa fa-arrow-left"> </i>&nbsp; Tiếp tục Mua hàng</a>
+                            <a class="checkout-btn" href="#"><i class="fa fa-check"></i> Thanh toán</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts{
+    <script>
+        $(function () {
+            $(".remove-cart-item").click(function () {
+                var row = $(this).closest("tr");
+                $.ajax({
+                    url: "/Cart/RemoveCart",
+                    method: "GET",
+                    data: {
+                        id: $(this).attr("data-id"),
+                        loai: "AJAX"
+                    },
+                    success: function (result) {
+                        console.log(result);
+                        //xóa dòng đang chọn
+                        row.remove();
+                        $("#TongTien").html(result.tongTien.toLocaleString() + " đ");
+                    }
+                });
+            });
+        });
+    </script>
+}
